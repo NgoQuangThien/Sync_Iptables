@@ -1,5 +1,6 @@
 import subprocess
 import signal
+import sys
 import time
 from datetime import datetime
 from os.path import exists
@@ -12,15 +13,15 @@ class GracefulKiller:
         signal.signal(signal.SIGINT, self.exit_gracefully)
         signal.signal(signal.SIGTERM, self.exit_gracefully)
 
-    def exit_gracefully(self, *args):
+    def exit_gracefully(self):
         self.kill_now = True
 
 
 class Command:
     def __init__(self):
         self.get_uptime = 'uptime -s'
-        self.iptables_save = 'iptables-save > /nsm/iptableslist.txt'
         self.iptables_restore = 'iptables-restore < /nsm/iptableslist.txt'
+        self.docker_is_active = 'systemctl is-active docker'
         self.process = None
 
     def run(self, command):
@@ -31,23 +32,18 @@ class Command:
         self.process.kill()
 
 
-def dt_2_ts(dt):
-    dt = datetime.strptime(dt, '%Y-%m-%d %H:%M:%S')
-    ts = time.mktime(dt.timetuple())
-    return ts
-
-
 if __name__ == '__main__':
     cmd = Command()
     killer = GracefulKiller()
     restored = False
     while not killer.kill_now:
-        if not restored:
-            now = dt_2_ts(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-            uptime = dt_2_ts(cmd.run(cmd.get_uptime)[0].decode('utf-8').strip())
-            # If uptime is less than 3 minutes, restore iptables
-            if exists('/nsm/iptableslist.txt') and now - uptime < 180:
+        if not restored and cmd.run(cmd.docker_is_active)[0].decode('utf-8').strip() == 'active':
+            if exists('/nsm/iptableslist.txt'):
                 cmd.run(cmd.iptables_restore)
                 restored = True
                 print('[{now}] [INFO] Restored iptables'.format(now=datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+                killer.exit_gracefully()
+            else:
+                print('[{now}] [ERROR] File not found: /nsm/iptableslist.txt'.format(now=datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+            sys.stdout.flush()
         time.sleep(3)

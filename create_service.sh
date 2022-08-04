@@ -10,5 +10,6 @@ sudo ln -s /usr/lib/systemd/system/sync-iptables.service /etc/systemd/system/syn
 sudo cp main.py $DIRECTORY
 
 sudo systemctl daemon-reload
+sudo systemctl enable sync-iptables.service
 sudo systemctl restart sync-iptables.service
 sudo systemctl status sync-iptables.service
