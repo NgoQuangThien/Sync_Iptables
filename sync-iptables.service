@@ -1,0 +1,11 @@
+[Unit]
+Description=Restore iptables - Author: ThienNQ
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /tools/Sync_Iptables/main.py
+User=root
+
+[Install]
+WantedBy=multi-user.target
+Alias=sync-iptables.service
