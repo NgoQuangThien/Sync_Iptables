@@ -3,7 +3,7 @@ Description=Restore iptables - Author: ThienNQ
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 /tools/Sync_Iptables/main.py
+ExecStart=/usr/bin/python3 /tools/sync-iptables/main.py
 User=root
 
 [Install]

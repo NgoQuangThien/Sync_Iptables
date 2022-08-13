@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DIRECTORY='/tools/Sync_Iptables/'
+DIRECTORY='/tools/sync-iptables/'
 if [[ ! -d "$DIRECTORY" ]]; then
 	sudo mkdir -p $DIRECTORY >>/dev/null 2>&1
 fi
